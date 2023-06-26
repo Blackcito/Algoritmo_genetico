@@ -80,10 +80,13 @@ final_reached_counts = []
 num_generations = 20
 num_individuals = 100
 num_steps = 80
+resta_steps = 5
+cantidad_generacion_grafica = 1
 Matriz_X = 20
 Matriz_Y = 20
 Valor_X = Matriz_X - 1
 Valor_Y = Matriz_Y - 1
+
 
 #Inicializacion de matrices a usar, genes, normales, etc, configuracion antes del algoritmo
 
@@ -156,7 +159,7 @@ for generation in range(num_generations):
     population = np.array(new_population)
 
     if generation % 50 == 0 and num_steps > 25:
-        num_steps -= 5
+        num_steps -= resta_steps
 #### Animacion, Graficacion, Etc #####
 
 fig, axs = plt.subplots(2, 3, figsize=(15, 8))
@@ -193,12 +196,12 @@ def update_image_and_title(generation):
 # Funciones para manejar los eventos de los botones
 def on_previous_button_clicked(event):
     global current_generation
-    current_generation = max(current_generation - 1, 0)
+    current_generation = max(current_generation - cantidad_generacion_grafica, 0)
     update_image_and_title(current_generation)
 
 def on_next_button_clicked(event):
     global current_generation
-    current_generation = min(current_generation + 1, num_generations - 1)
+    current_generation = min(current_generation + cantidad_generacion_grafica, num_generations - cantidad_generacion_grafica)
     update_image_and_title(current_generation)
 
 # Variables para la interacción interactiva
