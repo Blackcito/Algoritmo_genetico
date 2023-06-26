@@ -56,8 +56,8 @@ final_positions_over_generations = []
 final_reached_counts = []
 
 #Solicitudes de datos
-num_generations = 20
-num_individuals = 150
+num_generations = 15
+num_individuals = 50
 num_steps = 80
 Valor_X = 20
 Valor_Y = 20
@@ -100,13 +100,15 @@ for generation in range(num_generations):
     #Reproduccion
 
     new_population = best_individuals.copy()  # la nueva generación debe incluir a los padres
+    if num_individuals < len(new_population)*2:
+        num_individuals = len(new_population)*2
+    
     while len(new_population) < num_individuals:
         parent_indices = np.random.choice(len(best_individuals), size=2, replace=False).tolist()
         parent1, parent2 = best_individuals[parent_indices[0]], best_individuals[parent_indices[1]]
         child1, child2 = reproduce(parent1, parent2)
         new_population.append(child1)
-        if len(new_population) < num_individuals:
-            new_population.append(child2)
+        new_population.append(child2)
 
     population = np.array(new_population)
 

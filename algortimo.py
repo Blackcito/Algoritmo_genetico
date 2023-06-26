@@ -56,7 +56,7 @@ final_positions_over_generations = []
 final_reached_counts = []
 
 #Solicitudes de datos
-num_generations = 20
+num_generations = 15
 num_individuals = 200
 num_steps = 80
 Valor_X = 20
