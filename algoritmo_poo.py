@@ -77,8 +77,8 @@ final_reached_counts = []
 
 
 #Solicitudes de datos
-num_generations = 20
-num_individuals = 100
+num_generations = 100
+num_individuals = 200
 num_steps = 80
 resta_steps = 5
 cantidad_generacion_grafica = 1
