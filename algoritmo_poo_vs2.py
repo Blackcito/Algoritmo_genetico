@@ -24,7 +24,7 @@ class Individual:
 
     def move(self):
         direction = directions[np.random.choice(9, p=self.genes)]
-        new_pos = move(self.position, direction)
+        new_pos = movimientos(self.position, direction)
         if verify_step(new_pos, matrix_individuos, self):
             self.position = new_pos
 
@@ -47,7 +47,7 @@ class Individual:
         return child1, child2
 
 # Función que actualiza la posición según la dirección elegida
-def move(pos, direction):
+def movimientos(pos, direction):
     if direction == 'up':
         return (pos[0], max(0, pos[1] - 1))
     elif direction == 'down':
@@ -79,7 +79,6 @@ def verify_step(pos, matrix_individuos, individuo):
     if individuo.agresividad > existing_individual.agresividad:
         matrix_individuos[pos[0]][pos[1]] = individuo
         asesinatos_generacion_actual += 1
-        
         return True  # Se permite el reemplazo
     return False  # No se permite el reemplazo
 
@@ -89,8 +88,8 @@ final_positions_over_generations = []
 final_reached_counts = []
 
 # Solicitudes de datos
-num_generations = 100
-num_individuals = 200
+num_generations = 15
+num_individuals_inicial = 50
 num_steps = 40
 resta_steps = 5
 cantidad_generacion_grafica = 1
@@ -103,7 +102,7 @@ Valor_Y = Matriz_Y - 1
 matrix_individuos = np.empty((Matriz_X, Matriz_Y), dtype=object)
 
 # Generación inicial de individuos
-population = [Individual(genes) for genes in np.random.rand(num_individuals, 9)]
+population = [Individual(genes) for genes in np.random.rand(num_individuals_inicial, 9)]
 
 # Variables para el gráfico de asesinatos
 agresividad_promedio = []
@@ -115,6 +114,7 @@ for generation in range(num_generations):
     final_positions = [] 
     matrix_individuos.fill(None)  # Reiniciar la matriz de individuos en cada generación
     asesinatos_generacion_actual = 0  # Reiniciar el contador de asesinatos para cada individuo
+    
     for individual in population:
         
         for _ in range(num_steps):
@@ -131,10 +131,13 @@ for generation in range(num_generations):
     final_reached_counts.append(len(np.where(matrix_individuos[Valor_X] != None)[0]))
 
     best_individuals = [ind for pos, ind in zip(final_positions, population) if pos[0] == Valor_X]
+    best_individuals = best_individuals[:Matriz_X]
 
+    print(len(best_individuals))
     # Verificador gente final
     if len(best_individuals) < 2:
-        population = [Individual(genes) for genes in np.random.rand(num_individuals, 9)]
+        print("REINICIE")
+        population = [Individual(genes) for genes in np.random.rand(num_individuals_inicial, 9)]
         continue
 
     # Cálculo del promedio de agresividad y asesinatos
@@ -144,8 +147,11 @@ for generation in range(num_generations):
     print(asesinatos_generacion)
     # Reproducción
     new_population = best_individuals.copy()  # la nueva generación debe incluir a los padres
-    if num_individuals < len(new_population)*2:
+
+    if len(new_population) % 2 == 0:
         num_individuals = len(new_population)*2
+    else:
+        num_individuals = (len(new_population)-1)*2 +1 
 
     while len(new_population) < num_individuals:
         parent_indices = np.random.choice(len(best_individuals), size=2, replace=False).tolist()
@@ -153,8 +159,7 @@ for generation in range(num_generations):
         child1, child2 = parent1.reproduce(parent2)
         new_population.append(child1)
         new_population.append(child2)
-    print(len(new_population))
-    print(len(best_individuals))
+
     # Actualización de la población
     population = np.array(new_population)
 
