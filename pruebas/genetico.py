@@ -109,9 +109,12 @@ def assign_probabilities(best_individuals):
     probabilities = []
     p = 0.5
     for i, individual in enumerate(best_individuals):
+        print("++++++++++")
+        print(individual.selecion)
+        print("=================")
         probability = p * (1 - p) ** i  # Probabilidad proporcional al orden de llegada
-        
-    return probabilities
+        individual.selecion = probability
+        print(individual.selecion)
 
 
 # Inicializaciones matplotlib (listas, figuras, etc.)
