@@ -11,11 +11,12 @@ class Individual:
         self.position = self.initialize_position()
         self.agresividad = np.random.uniform(0.10, 0.50)
         self.vision = np.random.uniform(1, 3)
+        self.steps = 0
     
     def initialize_position(self):
         while True:
-            pos_x = np.random.randint(0, Valor_X)
-            pos_y = np.random.randint(0, Valor_Y)
+            pos_x = np.random.randint(0, Matriz_X)
+            pos_y = np.random.randint(0, 2)
             if matrix_individuos[pos_x][pos_y] is None:
                 matrix_individuos[pos_x][pos_y] = self
                 return (pos_x, pos_y)
@@ -70,8 +71,12 @@ def fitness(pos):
     return pos[0]
 
 def verify_step(pos, matrix_individuos, individuo):
-    global asesinatos_generacion_actual
+    global asesinatos_generacion_actual; Valor_Y; Valor_X
+    global band
+    band =0
     if matrix_individuos[pos[0]][pos[1]] is None:
+        if pos[1]==Valor_Y:
+            band=1
         return True
     existing_individual = matrix_individuos[pos[0]][pos[1]]
     if individuo.agresividad > existing_individual.agresividad:
@@ -98,6 +103,16 @@ Matriz_Y = 20
 Valor_X = Matriz_X - 1
 Valor_Y = Matriz_Y - 1
 
+#Geneacion semilla
+
+#seed = np.random
+np.random.seed()
+
+if num_individuals_inicial > Matriz_X*2:
+    num_individuals_inicial = Matriz_X
+
+
+
 # Inicialización de matriz de individuos
 matrix_individuos = np.empty((Matriz_X, Matriz_Y), dtype=object)
 
@@ -112,17 +127,22 @@ for generation in range(num_generations):
     final_positions = [] 
     matrix_individuos.fill(None)  # Reiniciar la matriz de individuos en cada generación
     asesinatos_generacion_actual = 0  # Reiniciar el contador de asesinatos para cada individuo
-    
+    Pasos_totales=[]
     for individual in population:
-        
+        band=0
         for _ in range(num_steps):
             new_pos = individual.move()
+            individual.steps += 1
+            if(band ==1):
+                Pasos_totales.append(individual.steps)
+                break
         final_positions.append(individual.position)
 
         # Actualizar el registro de individuos en la matriz
         matrix_individuos[individual.position[0], individual.position[1]] = individual
         
-    
+    print(Pasos_totales)
+    print(len(Pasos_totales))
     # Usamos generadores en lugar de listas donde sea posible
     final_positions_over_generations.append(matrix_individuos.copy())  # Guardamos la copia de la matriz
     average_fitnesses.append(np.mean([fitness(pos) for pos in final_positions]))
