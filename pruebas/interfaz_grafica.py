@@ -71,12 +71,8 @@ def fitness(pos):
     return pos[0]
 
 def verify_step(pos, matrix_individuos, individuo):
-    global asesinatos_generacion_actual; Valor_Y; Valor_X
-    global band
-    band =0
+    global asesinatos_generacion_actual
     if matrix_individuos[pos[0]][pos[1]] is None:
-        if pos[1]==Valor_Y:
-            band=1
         return True
     existing_individual = matrix_individuos[pos[0]][pos[1]]
     if individuo.agresividad > existing_individual.agresividad:
@@ -93,7 +89,7 @@ agresividad_promedio = []
 asesinatos_generacion = []
 
 # Solicitudes de datos
-num_generations = 15
+num_generations = 2
 num_individuals_inicial = 50
 num_steps = 40
 resta_steps = 5
@@ -129,25 +125,26 @@ for generation in range(num_generations):
     asesinatos_generacion_actual = 0  # Reiniciar el contador de asesinatos para cada individuo
     Pasos_totales=[]
     for individual in population:
-        band=0
+        individual.steps=0
         for _ in range(num_steps):
             new_pos = individual.move()
             individual.steps += 1
-            if(band ==1):
+            if(individual.position[0]==Valor_X):
                 Pasos_totales.append(individual.steps)
                 break
         final_positions.append(individual.position)
 
         # Actualizar el registro de individuos en la matriz
         matrix_individuos[individual.position[0], individual.position[1]] = individual
-        
-    print(Pasos_totales)
-    print(len(Pasos_totales))
+    #print("Generacion"+str(generation))
+    print("Numero de pasos de los que llegan "+str(Pasos_totales))
+    print("Cantidad que llego "+str(len(Pasos_totales)))    
     # Usamos generadores en lugar de listas donde sea posible
+    print(final_positions)
     final_positions_over_generations.append(matrix_individuos.copy())  # Guardamos la copia de la matriz
     average_fitnesses.append(np.mean([fitness(pos) for pos in final_positions]))
     final_reached_counts.append(len(np.where(matrix_individuos[Valor_X] != None)[0]))
-
+    
     best_individuals = [ind for pos, ind in zip(final_positions, population) if pos[0] == Valor_X]
     best_individuals = best_individuals[:Matriz_X]
 
