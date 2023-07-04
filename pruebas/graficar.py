@@ -32,19 +32,19 @@ def graficar(final_positions_over_generations,num_generations,cantidad_generacio
     ani.save('evolution.gif', writer='pillow')
 
     def update_image_and_title(generation):
-        axs[0, 0].imshow(np.rot90(final_positions_over_generations[generation] != None), cmap='Reds', interpolation='nearest')
+        axs[0, 0].imshow(np.rot90(final_positions_over_generations[generation - 1] != None), cmap='Reds', interpolation='nearest')
         axs[0, 0].set_title(f'Final Positions in Generation {generation}')
         fig.canvas.draw_idle()
 
     # Funciones para manejar los eventos de los botones
     def on_previous_button_clicked(event):
         nonlocal current_generation
-        current_generation = max(current_generation - cantidad_generacion_grafica, 0)
+        current_generation = max(current_generation - cantidad_generacion_grafica, 1)
         update_image_and_title(current_generation)
 
     def on_next_button_clicked(event):
         nonlocal current_generation
-        current_generation = min(current_generation + cantidad_generacion_grafica, num_generations - cantidad_generacion_grafica)
+        current_generation = min(current_generation + cantidad_generacion_grafica, num_generations)
         update_image_and_title(current_generation)
 
     # Variables para la interacción interactiva
