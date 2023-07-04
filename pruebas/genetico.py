@@ -33,11 +33,11 @@ class Individual:
 
         # Genes del primer hijo
         child1_genes = np.where(mask, self.genes, partner.genes)
-        child1_aggressiveness = self.aggressiveness if np.random.rand() < 0.5 else partner.aggressiveness
+        child1_aggressiveness = self.agresividad if np.random.rand() < 0.5 else partner.agresividad
 
         # Genes del segundo hijo (inverso del primer hijo)
         child2_genes = np.where(mask, partner.genes, self.genes)
-        child2_aggressiveness = partner.aggressiveness if np.random.rand() < 0.5 else self.aggressiveness
+        child2_aggressiveness = partner.agresividad if np.random.rand() < 0.5 else self.agresividad
 
         # Mutación de los genes del primer hijo
         if not np.random.uniform(0.10, 1) > mutation_rate:
@@ -54,10 +54,10 @@ class Individual:
         child1_genes /= np.sum(child1_genes)
         child2_genes /= np.sum(child2_genes)
 
-        child1 = Individual(child1_genes)
+        child1 = Individual(child1_genes,child1_aggressiveness)
         child1.aggressiveness = child1_aggressiveness
 
-        child2 = Individual(child2_genes)
+        child2 = Individual(child2_genes,child2_aggressiveness)
         child2.aggressiveness = child2_aggressiveness
 
         return child1, child2
@@ -182,7 +182,7 @@ for generation in range(num_generations):
     probabilities = assign_probabilities(best_individuals)
     # Verificador gente final
     if len(best_individuals) < 2:
-        population = [Individual(genes) for genes in np.random.rand(num_individuals, 9)]
+        population = [Individual(genes,np.random.uniform(0.10, 0.50)) for genes in np.random.rand(num_individuals, 9)]
         continue
 
     # Cálculo del promedio de agresividad y asesinatos
@@ -192,11 +192,11 @@ for generation in range(num_generations):
 
 
     # Reproducción
-    new_population =  np.random.choice(len(best_individuals)) # la nueva generación debe incluir a los padres
+    new_population =  best_individuals # la nueva generación debe incluir a los padres
 
 
     while len(new_population) < num_individuals:
-        parent_indices = np.random.choice(len(best_individuals), size=2, replace=False, p=probabilities).tolist()
+        parent_indices = np.random.choice(len(best_individuals), size=2, replace=False).tolist()
         parent1, parent2 = best_individuals[parent_indices[0]], best_individuals[parent_indices[1]]
 
         child1, child2 = parent1.reproduce(parent2)
