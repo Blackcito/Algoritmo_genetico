@@ -89,12 +89,8 @@ def fitness(pos):
     return pos[0]
 
 def verify_step(pos, matrix_individuos, individuo):
-    global asesinatos_generacion_actual; Valor_Y; Valor_X
-    global band
-    band =0
+    global asesinatos_generacion_actual
     if matrix_individuos[pos[0]][pos[1]] is None:
-        if pos[1]==Valor_Y:
-            band=1
         return True
     existing_individual = matrix_individuos[pos[0]][pos[1]]
     if individuo.agresividad > existing_individual.agresividad:
@@ -109,13 +105,8 @@ def assign_probabilities(best_individuals):
     probabilities = []
     p = 0.5
     for i, individual in enumerate(best_individuals):
-        print("++++++++++")
-        print(individual.selecion)
-        print("=================")
         probability = p * (1 - p) ** i  # Probabilidad proporcional al orden de llegada
         individual.selecion = probability
-        print(individual.selecion)
-
 
 # Inicializaciones matplotlib (listas, figuras, etc.)
 average_fitnesses = []
@@ -159,22 +150,18 @@ for generation in range(num_generations):
     final_positions = [] 
     matrix_individuos.fill(None)  # Reiniciar la matriz de individuos en cada generación
     asesinatos_generacion_actual = 0  # Reiniciar el contador de asesinatos para cada individuo
-    Pasos_totales=[]
     for individual in population:
-        band=0
+        individual.steps=0
         for _ in range(num_steps):
             new_pos = individual.move()
             individual.steps += 1
-            if(band ==1):
-                Pasos_totales.append(individual.steps)
+            if(individual.position[0]==Valor_X):
                 break
         final_positions.append(individual.position)
 
         # Actualizar el registro de individuos en la matriz
         matrix_individuos[individual.position[0], individual.position[1]] = individual
         
-    print(Pasos_totales)
-    print(len(Pasos_totales))
     # Usamos generadores en lugar de listas donde sea posible
     final_positions_over_generations.append(matrix_individuos.copy())  # Guardamos la copia de la matriz
     average_fitnesses.append(np.mean([fitness(pos) for pos in final_positions]))
@@ -182,6 +169,10 @@ for generation in range(num_generations):
 
     best_individuals = [ind for pos, ind in zip(final_positions, population) if pos[0] == Valor_X]
     best_individuals = best_individuals[:Matriz_X]
+    #Se ordena con respecto a los pasos dados para llegar al final.
+    indices_ordenados = np.argsort([individual.steps for individual in best_individuals])
+    best_individuals = np.take(best_individuals, indices_ordenados, axis=0)
+    #Asignar probabilidades
     probabilities = assign_probabilities(best_individuals)
     # Verificador gente final
     if len(best_individuals) < 2:
@@ -190,21 +181,30 @@ for generation in range(num_generations):
 
     # Cálculo del promedio de agresividad y asesinatos
     asesinatos_generacion.append(asesinatos_generacion_actual)
-
-    # Asignar probabilidades
-
-
     # Reproducción
-    new_population =  best_individuals # la nueva generación debe incluir a los padres
+    new_population = []
+    new_population.append(best_individuals[0]) # la nueva generación debe incluir a los padres
 
 
-    while len(new_population) < num_individuals:
-        parent_indices = np.random.choice(len(best_individuals), size=2, replace=False).tolist()
-        parent1, parent2 = best_individuals[parent_indices[0]], best_individuals[parent_indices[1]]
+    while True:
+        # Obtener las probabilidades de cada objeto
+        probabilidades = [individual.selecion for individual in best_individuals]
+        # Seleccionar 2 objetos basados en las probabilidades
+        probabilidades_normalizadas = [p / sum(probabilidades) for p in probabilidades]
 
-        child1, child2 = parent1.reproduce(parent2)
-        new_population.append(child1)
-        new_population.append(child2)
+        parents = np.random.choice(best_individuals, size=2, replace=False, p=probabilidades_normalizadas)
+        #parent_indices = np.random.choice(len(best_individuals), size=2, replace=False).tolist()
+        #parent1, parent2 = best_individuals[parent_indices[0]], best_individuals[parent_indices[1]]
+
+        child1, child2 = parents[0].reproduce(parents[1])
+        if len(new_population) < num_individuals:
+            new_population.append(child1)
+        else:
+            break
+        if len(new_population) < num_individuals:
+            new_population.append(child2)
+        else:
+            break
 
     # Actualización de la población
     population = np.array(new_population)
