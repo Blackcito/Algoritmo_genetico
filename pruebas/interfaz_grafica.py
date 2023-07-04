@@ -28,15 +28,12 @@ class Individual:
             self.position = new_pos
 
     def reproduce(self, partner):
-        mask = np.random.rand(9) > 0.5
-
-        # Mutación de los genes
+        mutation_index = np.random.randint(0, 9)  # Índice del gen a mutar (0-8)
         mutation_rate = np.random.uniform(0.10, 0.15)  # Mutation rate de 10 a 15%
-        mutation_mask = np.random.rand(9) < mutation_rate
-        mutation_values = np.random.rand(9) * mutation_mask
+        mutation_value = np.random.uniform(0, mutation_rate)
 
-        child1_genes = np.where(mask, self.genes, partner.genes) + mutation_values
-        child2_genes = np.where(mask, partner.genes, self.genes) + mutation_values
+        child1_genes[mutation_index] += mutation_value
+        child2_genes[mutation_index] += mutation_value
 
         child1_genes /= np.sum(child1_genes)
         child2_genes /= np.sum(child2_genes)
@@ -85,6 +82,16 @@ def verify_step(pos, matrix_individuos, individuo):
         return True  # Se permite el reemplazo
     return False  # No se permite el reemplazo
 
+
+def assign_probabilities(best_individuals):
+    num_individuals = len(best_individuals)
+    probabilities = []
+    for i, individual in enumerate(best_individuals):
+        probability = i / (num_individuals - 1)  # Probabilidad proporcional al orden de llegada
+        probabilities.append(probability)
+    return probabilities
+
+
 # Inicializaciones matplotlib (listas, figuras, etc.)
 average_fitnesses = []
 final_positions_over_generations = []
@@ -94,7 +101,7 @@ asesinatos_generacion = []
 
 # Solicitudes de datos
 num_generations = 15
-num_individuals_inicial = 50
+num_individuals = 50
 num_steps = 40
 resta_steps = 5
 cantidad_generacion_grafica = 1
@@ -108,8 +115,8 @@ Valor_Y = Matriz_Y - 1
 #seed = np.random
 np.random.seed()
 
-if num_individuals_inicial > Matriz_X*2:
-    num_individuals_inicial = Matriz_X
+if num_individuals > Matriz_X*2:
+    num_individuals = Matriz_X
 
 
 
@@ -117,7 +124,7 @@ if num_individuals_inicial > Matriz_X*2:
 matrix_individuos = np.empty((Matriz_X, Matriz_Y), dtype=object)
 
 # Generación inicial de individuos
-population = [Individual(genes) for genes in np.random.rand(num_individuals_inicial, 9)]
+population = [Individual(genes) for genes in np.random.rand(num_individuals, 9)]
 
 
 
@@ -150,26 +157,26 @@ for generation in range(num_generations):
 
     best_individuals = [ind for pos, ind in zip(final_positions, population) if pos[0] == Valor_X]
     best_individuals = best_individuals[:Matriz_X]
-
+    probabilities = assign_probabilities(best_individuals)
     # Verificador gente final
     if len(best_individuals) < 2:
-        population = [Individual(genes) for genes in np.random.rand(num_individuals_inicial, 9)]
+        population = [Individual(genes) for genes in np.random.rand(num_individuals, 9)]
         continue
 
     # Cálculo del promedio de agresividad y asesinatos
     asesinatos_generacion.append(asesinatos_generacion_actual)
 
-    # Reproducción
-    new_population = best_individuals.copy()  # la nueva generación debe incluir a los padres
+    # Asignar probabilidades
 
-    if len(new_population) % 2 == 0:
-        num_individuals = len(new_population)*2
-    else:
-        num_individuals = (len(new_population)-1)*2 +1 
+
+    # Reproducción
+    new_population =  np.random.choice(len(best_individuals)) # la nueva generación debe incluir a los padres
+
 
     while len(new_population) < num_individuals:
-        parent_indices = np.random.choice(len(best_individuals), size=2, replace=False).tolist()
+        parent_indices = np.random.choice(len(best_individuals), size=2, replace=False, p=probabilities).tolist()
         parent1, parent2 = best_individuals[parent_indices[0]], best_individuals[parent_indices[1]]
+
         child1, child2 = parent1.reproduce(parent2)
         new_population.append(child1)
         new_population.append(child2)
