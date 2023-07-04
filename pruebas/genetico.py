@@ -6,10 +6,10 @@ directions = {0: 'up', 1: 'down', 2: 'left', 3: 'right', 4: 'up_right', 5: 'up_l
 
 # Clase para representar a los individuos
 class Individual:
-    def __init__(self, genes):
+    def __init__(self, genes,agresividad):
         self.genes = genes / np.sum(genes)
         self.position = self.initialize_position()
-        self.agresividad = np.random.uniform(0.10, 0.50)
+        self.agresividad = agresividad
         self.selecion = 0
         self.steps = 0
     
@@ -27,22 +27,41 @@ class Individual:
         if verify_step(new_pos, matrix_individuos, self):
             self.position = new_pos
 
-    def reproduce(self, partner):
-        mutation_index = np.random.randint(0, 9)  # Índice del gen a mutar (0-8)
-        mutation_rate = np.random.uniform(0.10, 0.15)  # Mutation rate de 10 a 15%
-        mutation_value = np.random.uniform(0, mutation_rate)
+    def reproduce(self, partner): 
+        mutation_rate = np.random.uniform(0.10, 0.40)  # Mutation rate de 10 a 15%
+        mask = np.random.rand(9) < 0.5  # Máscara aleatoria para seleccionar los genes
 
+        # Genes del primer hijo
+        child1_genes = np.where(mask, self.genes, partner.genes)
+        child1_aggressiveness = self.aggressiveness if np.random.rand() < 0.5 else partner.aggressiveness
 
-#agregar probabilidad de emutacion FALTAAA
-        child1_genes[mutation_index] += mutation_value
-        child2_genes[mutation_index] += mutation_value
+        # Genes del segundo hijo (inverso del primer hijo)
+        child2_genes = np.where(mask, partner.genes, self.genes)
+        child2_aggressiveness = partner.aggressiveness if np.random.rand() < 0.5 else self.aggressiveness
+
+        # Mutación de los genes del primer hijo
+        if not np.random.uniform(0.10, 1) > mutation_rate:
+            mutation_index = np.random.randint(0, 9)  # Índice del gen a mutar (0-8)
+            mutation_value = np.random.uniform(0, 0.15)
+            child1_genes[mutation_index] += mutation_value
+
+        # Mutación de los genes del segundo hijo
+        if not np.random.uniform(0.10, 1) > mutation_rate:
+            mutation_index = np.random.randint(0, 9)  # Índice del gen a mutar (0-8)
+            mutation_value = np.random.uniform(0, 0.15)
+            child2_genes[mutation_index] += mutation_value
 
         child1_genes /= np.sum(child1_genes)
         child2_genes /= np.sum(child2_genes)
 
         child1 = Individual(child1_genes)
+        child1.aggressiveness = child1_aggressiveness
+
         child2 = Individual(child2_genes)
+        child2.aggressiveness = child2_aggressiveness
+
         return child1, child2
+
 
 # Función que actualiza la posición según la dirección elegida
 def movimientos(pos, direction):
@@ -127,7 +146,7 @@ if num_individuals > Matriz_X*2:
 matrix_individuos = np.empty((Matriz_X, Matriz_Y), dtype=object)
 
 # Generación inicial de individuos
-population = [Individual(genes) for genes in np.random.rand(num_individuals, 9)]
+population = [Individual(genes,np.random.uniform(0.10, 0.50)) for genes in np.random.rand(num_individuals, 9)]
 
 
 
