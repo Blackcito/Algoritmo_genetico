@@ -114,8 +114,6 @@ def verify_step(pos, individuo):
 
 
 def assign_probabilities(best_individuals):
-    num_individuals = len(best_individuals)
-    probabilities = []
     p = 0.3
     for i, individual in enumerate(best_individuals):
         probability = p * (1 - p) ** i  # Probabilidad proporcional al orden de llegada
@@ -285,7 +283,7 @@ def ejecutar_algoritmo(datos):
         best_individuals = np.take(best_individuals, indices_ordenados, axis=0)
 
         #Asignar probabilidades
-        probabilities = assign_probabilities(best_individuals)
+        assign_probabilities(best_individuals)
         # Verificador gente final
         if len(best_individuals) < 2 and len(best_individuals) > 0:
             population = []
@@ -319,7 +317,7 @@ def ejecutar_algoritmo(datos):
 
         # Actualización de la población
         population = np.array(new_population)
-        if generation % resta_generacion == 0 and num_steps > 25:
+        if generation % resta_generacion == 0 and num_steps > Matriz_Y:
             num_steps -= resta_steps
 
 
