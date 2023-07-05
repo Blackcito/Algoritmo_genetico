@@ -93,7 +93,7 @@ def movimientos(pos, direction):
     elif direction == 'stop':
         return pos
 
-def fitness(pos):
+def Posiciones_finales(pos):
     return pos[1]
 
 #Verificacion para pasos y asesinatos
@@ -268,7 +268,7 @@ def ejecutar_algoritmo(datos):
         # Usamos generadores en lugar de listas donde sea posible
         final_positions_over_generations.append(matrix_individuos.copy())  # Posiciones finales
         sobrevivientes_generacion.append(np.count_nonzero(matrix_individuos))
-        average_fitnesses.append(np.mean([fitness(pos) for pos in final_positions])) #Promedio posicion generacion
+        average_fitnesses.append(np.mean([Posiciones_finales(pos) for pos in final_positions])) #Promedio posicion generacion
         final_reached_counts.append(Individuos_llegaron) #conteo gente que llego al final
 
         # Cálculo del promedio de agresividad y asesinatos
@@ -329,7 +329,6 @@ def ejecutar_algoritmo(datos):
     graficar(final_positions_over_generations,num_generations,cantidad_generacion_grafica,average_fitnesses,asesinatos_generacion,final_reached_counts,sobrevivientes_generacion)
 
 main()
-
 
 
 
