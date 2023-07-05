@@ -24,6 +24,7 @@ class Individual:
         self.steps = 0
     
     def initialize_position(self):
+        matrix_individuos.fill(None)
         while True:
             pos_x = np.random.randint(0, Matriz_X)
             pos_y = np.random.randint(0, 2)
@@ -34,7 +35,7 @@ class Individual:
     def move(self):
         direction = directions[np.random.choice(9, p=self.genes)]
         new_pos = movimientos(self.position, direction)
-        if verify_step(new_pos, matrix_individuos, self):
+        if verify_step(new_pos, self):
             self.position = new_pos
 
     def reproduce(self, partner): 
@@ -94,21 +95,23 @@ def movimientos(pos, direction):
         return pos
 
 def fitness(pos):
-    return pos[0]
+    return pos[1]
 
 #Verificacion para pasos y asesinatos
-def verify_step(pos, matrix_individuos, individuo):
-    global asesinatos_generacion_actual
+def verify_step(pos, individuo):
+    global asesinatos_generacion_actual; matrix_individuos
     if matrix_individuos[pos[0]][pos[1]] is None:
         matrix_individuos[individuo.position[0]][individuo.position[1]] = None
         return True
-    #existing_individual = matrix_individuos[pos[0]][pos[1]]
-    #if individuo.agresividad > existing_individual.agresividad:
-        #matrix_individuos[individuo.position[0]][individuo.position[1]] = None
-        #matrix_individuos[pos[0]][pos[1]] = individuo
-        #asesinatos_generacion_actual += 1
-        #return True  # Se permite el reemplazo
+    
+    existing_individual = matrix_individuos[pos[0]][pos[1]]
+    if individuo.agresividad > existing_individual.agresividad:
+        matrix_individuos[individuo.position[0]][individuo.position[1]] = None
+        matrix_individuos[pos[0]][pos[1]] = individuo
+        asesinatos_generacion_actual += 1
+        return True  # Se permite el reemplazo
     return False  # No se permite el reemplazo
+    
 
 
 def assign_probabilities(best_individuals):
@@ -123,12 +126,12 @@ def main(default_data=None):
     # Datos predeterminados
     if default_data is None:
         default_data = {
-            'num_generations': 20,
+            'num_generations': 100,
             'num_individuals': 50,
             'num_steps': 60,
             'resta_steps': 5,
-            'resta_generacion': 10,
-            'cantidad_generacion_grafica': 1,
+            'resta_generacion': 50,
+            'cantidad_generacion_grafica': 10,
             'Matriz_X': 30,
             'Matriz_Y': 30,
             'seed': None
@@ -205,6 +208,7 @@ def ejecutar_algoritmo(datos):
     global Valor_X
     global Valor_Y
     global matrix_individuos
+    global asesinatos_generacion_actual
     # Inicializaciones matplotlib (listas, figuras, etc.)
     average_fitnesses = []
     final_positions_over_generations = []
@@ -238,41 +242,36 @@ def ejecutar_algoritmo(datos):
 
     # Generación inicial de individuos
     population = [Individual(genes,np.random.uniform(0.10, 0.50)) for genes in np.random.rand(num_individuals, 9)]
-    # Crear un DataFrame a partir de la matriz
     df = pd.DataFrame(matrix_individuos)
-
-        # Guardar el DataFrame en un archivo Excel
-
-
     ### !!!!! ALGORITMO !!!!!! ####
 
     for generation in range(num_generations):
         final_positions = [] 
         asesinatos_generacion_actual = 0  # Reiniciar el contador de asesinatos para cada individuo
+        Individuos_llegaron=0
         for individual in population:
             individual.steps=0
             for _ in range(num_steps):
-                new_pos = individual.move()
+                individual.move()
                 individual.steps += 1
-                if(individual.position[0]==Valor_X):
+                if(individual.position[1]==Valor_X):
+                    Individuos_llegaron+=1
                     break
             
             #print(agregue)
             final_positions.append(individual.position)
-
             # Actualizar el registro de individuos en la matriz
             matrix_individuos[individual.position[0], individual.position[1]] = individual
-            
         # Usamos generadores en lugar de listas donde sea posible
         final_positions_over_generations.append(matrix_individuos.copy())  # Posiciones finales
         average_fitnesses.append(np.mean([fitness(pos) for pos in final_positions])) #Promedio posicion generacion
-        final_reached_counts.append(len(np.where(matrix_individuos[Valor_X] != None)[0])) #conteo gente que llego al final
+        final_reached_counts.append(Individuos_llegaron) #conteo gente que llego al final
 
         # Cálculo del promedio de agresividad y asesinatos
         asesinatos_generacion.append(asesinatos_generacion_actual)
 
         #Selecion individuos finales
-        best_individuals = [ind for pos, ind in zip(final_positions, population) if pos[0] == Valor_X]
+        best_individuals = [ind for pos, ind in zip(final_positions, population) if pos[1] == Valor_Y]
         best_individuals = best_individuals[:Matriz_X]
 
         #Se ordena con respecto a los pasos dados para llegar al final.
@@ -281,26 +280,34 @@ def ejecutar_algoritmo(datos):
 
         #Asignar probabilidades
         probabilities = assign_probabilities(best_individuals)
-        
         # Verificador gente final
-        if len(best_individuals) < 2:
+        if len(best_individuals) < 2 and len(best_individuals) > 0:
             population = []
             best_individuo = best_individuals[0]
             population.append(Individual(best_individuo.genes, best_individuo.agresividad))
             population = [Individual(genes,np.random.uniform(0.10, 0.50)) for genes in np.random.rand(num_individuals -1, 9)]
             continue
-
+        if len(best_individuals)==0:
+            population = []
+            population = [Individual(genes,np.random.uniform(0.10, 0.50)) for genes in np.random.rand(num_individuals, 9)]
+            continue            
+        print("Asesinatos: "+str(asesinatos_generacion_actual))
+        con=0
+        for i in range(Matriz_X):
+            for j in range(Matriz_Y):
+                if matrix_individuos[i][j]!=None:
+                    con+=1
+        print("Total de personas: "+str(con))
         # Reproducción
         new_population = []
         new_population.append(best_individuals[0]) # la nueva generación debe incluir a los padres
         matrix_individuos.fill(None)
+        # Obtener las probabilidades de cada objeto
+        probabilidades = [individual.selecion for individual in best_individuals]
+        # Seleccionar 2 objetos basados en las probabilidades
+        probabilidades_normalizadas = [p / sum(probabilidades) for p in probabilidades]
 
         while True:
-            # Obtener las probabilidades de cada objeto
-            probabilidades = [individual.selecion for individual in best_individuals]
-            # Seleccionar 2 objetos basados en las probabilidades
-            probabilidades_normalizadas = [p / sum(probabilidades) for p in probabilidades]
-
             parents = np.random.choice(best_individuals, size=2, replace=False, p=probabilidades_normalizadas)
             child1, child2 = parents[0].reproduce(parents[1])
             if len(new_population) < num_individuals:
@@ -309,10 +316,10 @@ def ejecutar_algoritmo(datos):
                 new_population.append(child2)
             else:
                 break
+        
 
         # Actualización de la población
         population = np.array(new_population)
-
         if generation % resta_generacion == 0 and num_steps > 25:
             num_steps -= resta_steps
 

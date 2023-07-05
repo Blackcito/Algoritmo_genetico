@@ -10,19 +10,19 @@ def graficar(final_positions_over_generations,num_generations,cantidad_generacio
     fig, axs = plt.subplots(2, 3, figsize=(15, 8))
 
     # Configuración de la animación
-    im = axs[0, 2].imshow(np.rot90(final_positions_over_generations[0] != None), cmap='Reds', interpolation='nearest')
+    im = axs[0, 2].imshow((final_positions_over_generations[0] != None), cmap='Reds', interpolation='nearest')
     plt.colorbar(im, ax=axs[0, 2])
     axs[0, 2].set_title('Final Positions in Last Generation')
     axs[0, 2].axis('off')
 
     # Función de inicialización para la animación
     def init():
-        im.set_data(np.rot90(final_positions_over_generations[0] != None))
+        im.set_data((final_positions_over_generations[0] != None))
         return [im]
 
     # Función de animación que se ejecutará en cada cuadro
     def animate(i):
-        im.set_data(np.rot90(final_positions_over_generations[i] != None))
+        im.set_data((final_positions_over_generations[i] != None))
         return [im]
 
     # Crea la animación usando las funciones anteriores
@@ -32,7 +32,7 @@ def graficar(final_positions_over_generations,num_generations,cantidad_generacio
     ani.save('evolution.gif', writer='pillow')
 
     def update_image_and_title(generation):
-        axs[0, 0].imshow(np.rot90(final_positions_over_generations[generation - 1] != None), cmap='Reds', interpolation='nearest')
+        axs[0, 0].imshow((final_positions_over_generations[generation - 1] != None), cmap='Reds', interpolation='nearest')
         axs[0, 0].set_title(f'Final Positions in Generation {generation}')
         fig.canvas.draw_idle()
 
@@ -77,7 +77,7 @@ def graficar(final_positions_over_generations,num_generations,cantidad_generacio
     axs[1, 1].set_title('Average Aggressiveness vs. Killings')
 
     # Dibuja la matriz de posiciones finales para la última generación
-    axs[0, 1].imshow(np.rot90(final_positions_over_generations[-1] != None), cmap='Reds', interpolation='nearest')
+    axs[0, 1].imshow((final_positions_over_generations[-1] != None), cmap='Reds', interpolation='nearest')
     axs[0, 1].set_title('Final Positions in Last Generation')
     axs[0, 1].set_xlabel('Y')
     axs[0, 1].set_ylabel('X')
