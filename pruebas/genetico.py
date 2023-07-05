@@ -242,7 +242,7 @@ def ejecutar_algoritmo(datos):
 
     # Generación inicial de individuos
     population = [Individual(genes,np.random.uniform(0.10, 0.50)) for genes in np.random.rand(num_individuals, 9)]
-    df = pd.DataFrame(matrix_individuos)
+
     ### !!!!! ALGORITMO !!!!!! ####
 
     for generation in range(num_generations):
@@ -256,7 +256,7 @@ def ejecutar_algoritmo(datos):
             for _ in range(num_steps):
                 individual.move()
                 individual.steps += 1
-                if(individual.position[1]==Valor_X):
+                if(individual.position[1]==Valor_Y):
                     Individuos_llegaron+=1
                     break
             
@@ -279,7 +279,7 @@ def ejecutar_algoritmo(datos):
 
         #Selecion individuos finales
         best_individuals = [ind for pos, ind in zip(final_positions, population) if pos[1] == Valor_Y]
-        best_individuals = best_individuals[:Matriz_X]
+        best_individuals = best_individuals[:Matriz_Y]
 
         #Se ordena con respecto a los pasos dados para llegar al final.
         indices_ordenados = np.argsort([individual.steps for individual in best_individuals])
@@ -299,10 +299,6 @@ def ejecutar_algoritmo(datos):
             population = [Individual(genes,np.random.uniform(0.10, 0.50)) for genes in np.random.rand(num_individuals, 9)]
             continue            
 
-        
-
-        
-
         # Reproducción
         new_population = []
         new_population.append(best_individuals[0]) # la nueva generación debe incluir a los padres
@@ -321,7 +317,6 @@ def ejecutar_algoritmo(datos):
                 new_population.append(child2)
             else:
                 break
-        
 
         # Actualización de la población
         population = np.array(new_population)
@@ -333,7 +328,7 @@ def ejecutar_algoritmo(datos):
     #### Animacion, Graficacion, Etc #####
 
     seed_state = np.random.get_state()
-    print(seed_state[1][0])
+    print("Semilla: "+str(seed_state[1][0]))
     graficar(final_positions_over_generations,num_generations,cantidad_generacion_grafica,average_fitnesses,asesinatos_generacion,final_reached_counts,sobrevivientes_generacion)
 
 main()
